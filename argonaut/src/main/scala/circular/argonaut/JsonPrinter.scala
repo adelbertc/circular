@@ -15,8 +15,9 @@
  */
 
 package circular
+package argonaut
 
-import argonaut.{EncodeJson, Json, JsonObject}
+import _root_.argonaut.{EncodeJson, Json, JsonObject}
 import cats.Eq
 import cats.implicits._
 
@@ -57,8 +58,8 @@ private[circular] sealed abstract class JsonPrinterInstances {
 
     def empty[A]: JsonPrinter[A] = JsonPrinter(Function.const(None))
 
-    def pmap[A, B](fa: JsonPrinter[A])(f: Prism[A, B]): JsonPrinter[B] =
-      JsonPrinter(f.from.andThen(fa.run))
+    def pimap[A, B](fa: JsonPrinter[A])(f: PIso[A, B]): JsonPrinter[B] =
+      JsonPrinter(b => f.from(b).flatMap(fa.run))
 
     def combineK[A](x: JsonPrinter[A], y: JsonPrinter[A]): JsonPrinter[A] =
       JsonPrinter(a => x.run(a).orElse(y.run(a)))

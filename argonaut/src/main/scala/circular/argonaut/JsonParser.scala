@@ -15,8 +15,9 @@
  */
 
 package circular
+package argonaut
 
-import argonaut.{DecodeJson, Json}
+import _root_.argonaut.{DecodeJson, Json}
 import cats.Eq
 import cats.implicits._
 
@@ -46,7 +47,7 @@ private[circular] sealed abstract class JsonParserInstances {
 
     def empty[A]: JsonParser[A] = JsonParser(Function.const(None))
 
-    def pmap[A, B](fa: JsonParser[A])(f: Prism[A, B]): JsonParser[B] = JsonParser { json =>
+    def pimap[A, B](fa: JsonParser[A])(f: PIso[A, B]): JsonParser[B] = JsonParser { json =>
       for {
         a <- fa.run(json)
         b <- f.to(a)

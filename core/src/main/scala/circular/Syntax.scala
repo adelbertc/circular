@@ -16,10 +16,12 @@
 
 package circular
 
-trait PrismFunctor[F[_]] {
-  def pmap[A, B](fa: F[A])(f: Prism[A, B]): F[B]
+import cats.{Cartesian, Eq, MonoidK}
+
+trait Syntax[F[_]] extends MonoidK[F] with Cartesian[F] with PIsoFunctor[F] {
+  def pure[A: Eq](a: A): F[A]
 }
 
-object PrismFunctor {
-  def apply[F[_]](implicit F: PrismFunctor[F]): PrismFunctor[F] = F
+object Syntax {
+  def apply[F[_]](implicit F: Syntax[F]): Syntax[F] = F
 }

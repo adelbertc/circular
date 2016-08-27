@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 
-package circular
+package circular.syntax
 
-import cats.{Cartesian, Eq, MonoidK}
+import cats.Cartesian
 
-trait Syntax[F[_]] extends MonoidK[F] with Cartesian[F] with PrismFunctor[F] {
-  def pure[A: Eq](a: A): F[A]
+trait CartesianSyntax {
+  implicit def circularSyntaxCartesian[F[_], A](fa: F[A]): CartesianOps[F, A] =
+    new CartesianOps(fa)
 }
 
-object Syntax {
-  def apply[F[_]](implicit F: Syntax[F]): Syntax[F] = F
+final class CartesianOps[F[_], A](val fa: F[A]) extends AnyVal {
+  def <*>[B](fb: F[B])(implicit F: Cartesian[F]): F[(A, B)] = F.product(fa, fb)
 }
