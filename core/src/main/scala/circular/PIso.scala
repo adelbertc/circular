@@ -84,6 +84,8 @@ trait PIsoFunctions {
 
   def fromPrism[A, B](to: A => Option[B], from: B => A): PIso[A, B] = PIso(to, b => Some(from(b)))
 
+  def fromPrismR[A, B](from: A => B, to: B => Option[A]): PIso[A, B] = PIso(a => Some(from(a)), to)
+
   // PIsos for standard library - List, Vector, Option, Either
 
   def nil[A]: PIso[Unit, List[A]] = {

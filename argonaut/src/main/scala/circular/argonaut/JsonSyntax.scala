@@ -35,12 +35,11 @@ trait JsonSyntaxFunctions {
 
   def obj[F[_]: JsonSyntax]: F[JsonObject] = liftJson(JsonPIso.obj)
 
-  def key[F[_]: JsonSyntax](k: String): F[Json] = liftJson(JsonPIso.obj.andThen(JsonPIso.key(k)))
+  def key[F[_]: JsonSyntax](k: String): F[Json] = liftJson(JsonPIso.key(k).andThen(JsonPIso.obj))
 
   def array[F[_]: JsonSyntax]: F[JsonArray] = liftJson(JsonPIso.array)
 
-  def field[F[_]: JsonSyntax, A](k: String, syntax: F[A]): F[A] =
-    JsonSyntax[F].runJson(syntax, key(k))
+  def field[F[_]: JsonSyntax, A](k: String, syntax: F[A]): F[A] = JsonSyntax[F].runJson(syntax, key(k))
 
   def boolean[F[_]: JsonSyntax]: F[Boolean] = liftJson(JsonPIso.boolean)
 
@@ -64,5 +63,5 @@ trait JsonSyntaxFunctions {
 
   def string[F[_]: JsonSyntax]: F[String] = liftJson(JsonPIso.string)
 
-  private def liftJson[F[_]: JsonSyntax, A](pIso: PIso[Json, A]): F[A] = pIso.lift(JsonSyntax[F].json)
+  private def liftJson[F[_]: JsonSyntax, A](pIso: PIso[A, Json]): F[A] = pIso.invert.lift(JsonSyntax[F].json)
 }

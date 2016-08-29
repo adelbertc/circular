@@ -21,39 +21,39 @@ import _root_.argonaut.{CodecJson, EncodeJson, Json, JsonNumber, JsonObject}
 import _root_.argonaut.Argonaut.JsonArray
 
 object JsonPIso {
-  def fromCodec[A](implicit A: CodecJson[A]): PIso[Json, A] =
-    PIso(json => A.decodeJson(json).toOption, a => Some(A.encode(a)))
+  def fromCodec[A](implicit A: CodecJson[A]): PIso[A, Json] =
+    PIso(a => Some(A.encode(a)), json => A.decodeJson(json).toOption)
 
-  val obj: PIso[Json, JsonObject] = PIso.fromPrism(_.obj, Json.jObject)
+  val obj: PIso[JsonObject, Json] = PIso.fromPrismR(Json.jObject, _.obj)
 
-  def key(k: String): PIso[JsonObject, Json] = PIso.fromPrism(_(k), JsonObject.single(k, _))
+  def key(k: String): PIso[Json, JsonObject] = PIso.fromPrismR(JsonObject.single(k, _), _(k))
 
-  val array: PIso[Json, JsonArray] = PIso.fromPrism(_.array, Json.jArray)
+  val array: PIso[JsonArray, Json] = PIso.fromPrismR(Json.jArray, _.array)
 
-  def field[A](k: String, pIso: PIso[Json, A]): PIso[Json, A] =
-    obj.andThen(key(k)).andThen(pIso)
+  def field[A](k: String, pIso: PIso[A, Json]): PIso[A, Json] = pIso.andThen(key(k)).andThen(obj)
 
-  val boolean: PIso[Json, Boolean] = PIso.fromPrism(_.bool, Json.jBool)
+  val boolean: PIso[Boolean, Json] = PIso.fromPrismR(Json.jBool, _.bool)
 
-  val number: PIso[Json, JsonNumber] = PIso.fromPrism(_.number, Json.jNumber)
+  val number: PIso[JsonNumber, Json] = PIso.fromPrismR(Json.jNumber, _.number)
 
-  val bigDecimal: PIso[Json, BigDecimal] = number.andThen(PIso(jnum => Some(jnum.toBigDecimal), wrap[BigDecimal]))
+  val bigDecimal: PIso[BigDecimal, Json] =
+    PIso[BigDecimal, JsonNumber](wrap[BigDecimal], jnum => Some(jnum.toBigDecimal)).andThen(number)
 
-  val long: PIso[Json, Long] = number.andThen(PIso(_.toLong, wrap[Long]))
+  val long: PIso[Long, Json] = PIso[Long, JsonNumber](wrap[Long], _.toLong).andThen(number)
 
-  val bigInt: PIso[Json, BigInt] = number.andThen(PIso(_.toBigInt, wrap[BigInt]))
+  val bigInt: PIso[BigInt, Json] = PIso[BigInt, JsonNumber](wrap[BigInt], _.toBigInt).andThen(number)
 
-  val byte: PIso[Json, Byte] = number.andThen(PIso(_.toByte, wrap[Byte]))
+  val byte: PIso[Byte, Json] = PIso[Byte, JsonNumber](wrap[Byte], _.toByte).andThen(number)
 
-  val double: PIso[Json, Double] = number.andThen(PIso(_.toDouble, wrap[Double]))
+  val double: PIso[Double, Json] = PIso[Double, JsonNumber](wrap[Double], _.toDouble).andThen(number)
 
-  val float: PIso[Json, Float] = number.andThen(PIso(_.toFloat, wrap[Float]))
+  val float: PIso[Float, Json] = PIso[Float, JsonNumber](wrap[Float], _.toFloat).andThen(number)
 
-  val int: PIso[Json, Int] = number.andThen(PIso(_.toInt, wrap[Int]))
+  val int: PIso[Int, Json] = PIso[Int, JsonNumber](wrap[Int], _.toInt).andThen(number)
 
-  val short: PIso[Json, Short] = number.andThen(PIso(_.toShort, wrap[Short]))
+  val short: PIso[Short, Json] = PIso[Short, JsonNumber](wrap[Short], _.toShort).andThen(number)
 
-  val string: PIso[Json, String] = PIso.fromPrism(_.string, Json.jString)
+  val string: PIso[String, Json] = PIso.fromPrismR(Json.jString, _.string)
 
   private def wrap[A](a: A)(implicit A: EncodeJson[A]): Option[JsonNumber] =
     A.encode(a).number
