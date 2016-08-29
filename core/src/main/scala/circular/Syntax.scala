@@ -18,7 +18,7 @@ package circular
 
 import cats.{Cartesian, Eq, MonoidK}
 
-trait Syntax[F[_]] extends MonoidK[F] with Cartesian[F] with PIsoFunctor[F] {
+trait Syntax[F[_]] extends MonoidK[F] with Cartesian[F] with PInvariant[F] {
   def pure[A: Eq](a: A): F[A]
 }
 

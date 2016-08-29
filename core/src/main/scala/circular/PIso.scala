@@ -20,8 +20,8 @@ import cats.arrow.Category
 import cats.implicits._
 
 final case class PIso[A, B](to: A => Option[B], from: B => Option[A]) {
-  def lift[F[_]: PIsoFunctor](fa: F[A]): F[B] =
-    PIsoFunctor[F].pimap(fa)(this)
+  def lift[F[_]: PInvariant](fa: F[A]): F[B] =
+    PInvariant[F].pimap(fa)(this)
 
   def invert: PIso[B, A] = PIso(from, to)
 

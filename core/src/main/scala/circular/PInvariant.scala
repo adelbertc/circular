@@ -16,10 +16,10 @@
 
 package circular
 
-trait PIsoFunctor[F[_]] {
+trait PInvariant[F[_]] {
   def pimap[A, B](fa: F[A])(f: PIso[A, B]): F[B]
 }
 
-object PIsoFunctor {
-  def apply[F[_]](implicit F: PIsoFunctor[F]): PIsoFunctor[F] = F
+object PInvariant {
+  def apply[F[_]](implicit F: PInvariant[F]): PInvariant[F] = F
 }
