@@ -20,9 +20,18 @@ package argonaut
 import _root_.argonaut.{CodecJson, Json, JsonNumber, JsonObject}
 import _root_.argonaut.Argonaut._
 
+/** Type class for defining JSON syntax with partial isomorphisms. */
 trait JsonSyntax[F[_]] extends Syntax[F] {
+  /**
+   * Run the `fa` syntax against some JSON, represented by `fj`.
+   * Useful when defining syntax for JSON objects.
+   *
+   * @param fa Syntax to run against the JSON
+   * @param fj The syntax JSON thus far
+   */
   def runJson[A](fa: F[A], fj: F[Json]): F[A]
 
+  /** Get the JSON defined by the current syntax. */
   def json: F[Json]
 }
 

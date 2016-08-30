@@ -18,6 +18,7 @@ package circular
 
 import cats.{Cartesian, Eq, MonoidK}
 
+/** Type class for defining syntax with partial isomorphisms. */
 trait Syntax[F[_]] extends MonoidK[F] with Cartesian[F] with PInvariant[F] {
   def pure[A: Eq](a: A): F[A]
 }

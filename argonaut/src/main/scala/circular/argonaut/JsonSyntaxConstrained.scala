@@ -21,7 +21,28 @@ import _root_.argonaut.{CodecJson, Json, JsonNumber, JsonObject}
 import _root_.argonaut.Argonaut.JsonArray
 import cats.Eq
 
-trait JsonSyntaxConstrained[A] { fa =>
+/**
+ * Analogous to [[JsonSyntax]] but as a value. Since Scala values can't be
+ * polymorphic and methods aren't values, we emulate a polymorphic value
+ * constrained by [[JsonSyntax]] like this.
+ *
+ * This becomes useful with syntax, allowing you to work with [[JsonSyntax]] like:
+ *
+ * {{{
+ * import JsonSyntaxConstrained.{int, string}
+ * val syntax: JsonSyntaxConstrained[(Int, String)] =
+ *   ("a" ::= int) <*> ("b" ::= string)
+ * }}}
+ *
+ * whose equivalent method form is:
+ *
+ * {{{
+ * import JsonSyntax.{int, string}
+ * def syntax[F[_]: JsonSyntax]: F[(Int, String)] =
+ *   jsonField(a, int) <*> jsonField("b", string)
+ * }}}
+ */
+trait JsonSyntaxConstrained[A] {
   def apply[F[_]: JsonSyntax]: F[A]
 }
 

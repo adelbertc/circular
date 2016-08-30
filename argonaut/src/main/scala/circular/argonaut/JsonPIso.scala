@@ -20,6 +20,7 @@ package argonaut
 import _root_.argonaut.{CodecJson, EncodeJson, Json, JsonNumber, JsonObject}
 import _root_.argonaut.Argonaut.JsonArray
 
+/** Partial isomorphisms for JSON */
 object JsonPIso {
   def fromCodec[A](implicit A: CodecJson[A]): PIso[A, Json] =
     PIso(a => Some(A.encode(a)), json => A.decodeJson(json).toOption)

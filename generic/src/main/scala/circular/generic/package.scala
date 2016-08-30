@@ -22,12 +22,33 @@ import shapeless.ops.hlist.Tupler
 import shapeless.ops.product.ToHList
 
 package object generic {
-  def derive[T, D]: DerivePartiallyApplied[T, D] = new DerivePartiallyApplied[T, D]()
+  /**
+   * Derive a [[PIso]] for a sum type (sealed family of case classes). The resulting
+   * [[PIso]] will be between the tupled constructor of `D` and `T`.
+   *
+   * @tparam T Type constructor - the type of the trait or abstract class marked 'sealed'
+   * @tparam D Data constructor - the type of the case class below `T`
+   */
+  def sum[T, D]: SumPartiallyApplied[T, D] = new SumPartiallyApplied[T, D]()
+
+  /**
+   * Derive a [[PIso]] for a product type (a case class). The resulting [[PIso]] will
+   * be between the tupled constructor of `A` and `A`.
+   *
+   * @tparam A The case class
+   */
+  def product[A]: ProductPartiallyApplied[A] = new ProductPartiallyApplied[A]()
 }
 
 package generic {
-  final class DerivePartiallyApplied[T, D] {
-    def pIso[C <: Coproduct, L <: HList, P <: Product](implicit
+  final class SumPartiallyApplied[T, D] {
+    /**
+     * Do the derivation.
+     *
+     * The type parameters and implicit arguments should be inferred - if they are not
+     * please make sure your call to `derive` is correct.
+     */
+    def derive[C <: Coproduct, L <: HList, P <: Product](implicit
       TGeneric: Generic.Aux[T, C], // T <=> Coproduct
       DSelect : Selector[C, D],    // Coproduct => D
       DGeneric: Generic.Aux[D, L], // D <=> HList
@@ -38,6 +59,24 @@ package generic {
     ): PIso[P, T] = {
       def to(p: P): Option[T] = Some(TGeneric.from(DInject(DGeneric.from(PHList(p)))))
       def from(t: T): Option[P] = DSelect(TGeneric.to(t)).map(d => LTupler(DGeneric.to(d)))
+      PIso(to, from)
+    }
+  }
+
+  final class ProductPartiallyApplied[A] {
+    /**
+     * Do the derivation.
+     *
+     * The type parameters and implicit arguments should be inferred - if they are not
+     * please make sure your call to `derive` is correct.
+     */
+    def derive[L <: HList, P <: Product](implicit
+      AGeneric: Generic.Aux[A, L], // A <=> HList
+      LTupler : Tupler.Aux[L, P],  // HList => TupleN
+      PHList  : ToHList.Aux[P, L]  // TupleN => HList
+    ): PIso[P, A] = {
+      def to(p: P): Option[A] = Some(AGeneric.from(PHList(p)))
+      def from(a: A): Option[P] = Some(LTupler(AGeneric.to(a)))
       PIso(to, from)
     }
   }

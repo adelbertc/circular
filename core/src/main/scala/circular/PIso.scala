@@ -21,6 +21,14 @@ import cats.Eq
 import cats.implicits._
 import scala.annotation.tailrec
 
+/**
+ * A partial isomorphism.
+ *
+ * A partial ismorphism should obey the following laws:
+ *
+ *   to(a).flatMap(from) = Some(a)
+ *   from(b).flatMap(to) = Some(b)
+ */
 final case class PIso[A, B](to: A => Option[B], from: B => Option[A]) {
   import PIso.{associate, cons, id, iterateDriver, nil, unit}
 
@@ -33,20 +41,28 @@ final case class PIso[A, B](to: A => Option[B], from: B => Option[A]) {
 
   def andThen[C](other: PIso[B, C]): PIso[A, C] = other.compose(this)
 
+  /**
+   * Compose with another [[PIso]], resulting in a [[PIso]] over pairs
+   * where each component is worked on by the constituent [[PIso]]s.
+   */
   def split[C, D](other: PIso[C, D]): PIso[(A, C), (B, D)] =
     PIso({ case (a, c) => to(a).product(other.to(c)) },
          { case (b, d) => from(b).product(other.from(d)) })
 
+  /** Create a [[PIso]] that takes two parameters but only modifies the left one. */
   def first[C]: PIso[(A, C), (B, C)] = split(PIso.id[C])
 
+  /** Create a [[PIso]] that takes two parameters but only modifies the right one. */
   def second[C]: PIso[(C, A), (C, B)] = PIso.id[C].split(this)
 
+  /** Iterate this [[PIso]], going `to` in one direction and `from` in another. */
   def iterate(implicit ev: A =:= B): PIso[A, A] = {
     val paa = this.asInstanceOf[PIso[A, A]]
     PIso(a => Some(iterateDriver(paa.to, a)),
          a => Some(iterateDriver(paa.from, a)))
   }
 
+  /** Analogous to `List#foldLeft` but can be run forwards or backwards. */
   def foldLeft(implicit ev: A <:< (A, B)): PIso[(A, List[B]), A] = {
     val paba = this.asInstanceOf[PIso[(A, B), A]]
     val step: PIso[(A, List[B]), (A, List[B])] =
@@ -134,18 +150,23 @@ trait PIsoFunctions {
 
   def right[A, B]: PIso[B, Either[A, B]] = PIso(b => Some(Right(b)), _.right.toOption)
 
+  /** Nested products associate. */
   def associate[A, B, C]: PIso[(A, (B, C)), ((A, B), C)] =
     PIso.fromIso({ case (a, (b, c)) => ((a, b), c) },
                  { case ((a, b), c) => (a, (b, c)) })
 
+  /** Products commute. */
   def commute[A, B]: PIso[(A, B), (B, A)] =
     PIso.fromIso({ case (a, b) => (b, a) }, { case (b, a) => (a, b) })
 
+  /** () is the unit element for products - (A, ()) is isomorphic to A. */
   def unit[A]: PIso[A, (A, Unit)] = PIso.fromIso((_, ()), _._1)
 
+  /** A partial isomorphism between () and the set containing only `a`. */
   def element[A](a: A)(implicit A: Eq[A]): PIso[Unit, A] =
     PIso(_ => Some(a), a2 => if (A.eqv(a, a2)) Some(()) else None)
 
+  /** An partial isomorphism between a subset of a set and the set itself. */
   def subset[A](p: A => Boolean): PIso[A, A] = {
     def f(a: A): Option[A] = if (p(a)) Some(a) else None
     PIso(f, f)

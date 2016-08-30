@@ -16,6 +16,7 @@
 
 package circular
 
+/** An invariant/exponential functor that accepts partial functions. */
 trait PInvariant[F[_]] {
   def pimap[A, B](fa: F[A])(f: PIso[A, B]): F[B]
 }

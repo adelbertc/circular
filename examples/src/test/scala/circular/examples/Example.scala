@@ -77,8 +77,8 @@ class Example extends Specification {
     import JsonSyntaxConstrained._
 
     val syntax =
-      derive[Adt, Adt.Ctor1].pIso.lift(("boolean" ::= boolean) <*> ("double" ::= double))         <+>
-      derive[Adt, Adt.Ctor2].pIso.lift("payload" ::= (("int" ::= int) <*> ("string" ::= string)))
+      sum[Adt, Adt.Ctor1].derive.lift(("boolean" ::= boolean) <*> ("double" ::= double))         <+>
+      sum[Adt, Adt.Ctor2].derive.lift("payload" ::= (("int" ::= int) <*> ("string" ::= string)))
 
     val num = 5
     val str = "a string"
