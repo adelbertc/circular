@@ -64,8 +64,8 @@ class Example extends Specification {
     val badJson = Json("not" := "good")
     val foo = Foo(str, bool)
 
-    (syntax[JsonParser].run(goodJson) must beSome(foo))      and
-    (syntax[JsonParser].run(badJson)  must beNone)           and
+    (syntax[JsonParser].run(goodJson).toOption must beSome(foo))      and
+    (syntax[JsonParser].run(badJson).toOption  must beNone)           and
     (syntax[JsonPrinter].run(foo)     must beSome(goodJson))
   }
 
@@ -86,8 +86,8 @@ class Example extends Specification {
     val badJson = Json("not" := "good")
     val adt = Adt.Ctor2(num, str)
 
-    (syntax[JsonParser].run(goodJson) must beSome(adt))      and
-    (syntax[JsonParser].run(badJson)  must beNone)           and
+    (syntax[JsonParser].run(goodJson).toOption must beSome(adt))      and
+    (syntax[JsonParser].run(badJson).toOption  must beNone)           and
     (syntax[JsonPrinter].run(adt)     must beSome(goodJson))
   }
 }
