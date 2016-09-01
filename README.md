@@ -1,5 +1,5 @@
 # circular
-**circular** is an [invertible syntax](http://dl.acm.org/citation.cfm?id=1863525) library for Scala.
+**circular** is an [invertible syntax](http://camlunity.ru/swap/Library/Computer%20Science/Parsers/Invertible%20Syntax%20Descriptions.%20Unifying%20Parsing%20and%20Pretty-Printing.pdf) library for Scala.
 
 The **circular** project and contributors support the
 [Typelevel](http://typelevel.org/) [Code of Conduct](http://typelevel.org/conduct.html) and want all its
