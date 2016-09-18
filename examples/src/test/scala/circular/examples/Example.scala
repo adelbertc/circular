@@ -88,6 +88,6 @@ class Example extends Specification {
 
     (syntax[JsonParser].run(goodJson).toOption must beSome(adt))      and
     (syntax[JsonParser].run(badJson).toOption  must beNone)           and
-    (syntax[JsonPrinter].run(adt)     must beSome(goodJson))
+    (syntax[JsonPrinter].run(adt)              must beSome(goodJson))
   }
 }

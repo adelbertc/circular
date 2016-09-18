@@ -33,7 +33,7 @@ lazy val commonSettings = List(
     compilerPlugin("org.spire-math" %% "kind-projector" % "0.8.0"),
     compilerPlugin("org.scalamacros" % "paradise"       % "2.1.0" cross CrossVersion.full),
     "io.argonaut"                 %% "argonaut"      % "6.2-M3",
-    "org.typelevel"               %% "cats-core"     % "0.7.1-SNAPSHOT",
+    "org.typelevel"               %% "cats-core"     % "0.7.2-SNAPSHOT",
     "com.chuusai"                 %% "shapeless"     % "2.3.2",
     "org.specs2"                  %% "specs2-core"   % "3.8.4"           % "test"
   )

@@ -21,6 +21,8 @@ import shapeless.ops.coproduct.{Inject, Selector}
 import shapeless.ops.hlist.Tupler
 import shapeless.ops.product.ToHList
 
+import circular.generic.util.View
+
 package object generic {
   /**
    * Derive a [[PIso]] for a sum type (sealed family of case classes). The resulting
@@ -48,17 +50,15 @@ package generic {
      * The type parameters and implicit arguments should be inferred - if they are not
      * please make sure your call to `derive` is correct.
      */
-    def derive[C <: Coproduct, L <: HList, P <: Product](implicit
-      TGeneric: Generic.Aux[T, C], // T <=> Coproduct
-      DSelect : Selector[C, D],    // Coproduct => D
-      DGeneric: Generic.Aux[D, L], // D <=> HList
-      LTupler : Tupler.Aux[L, P],  // HList => TupleN
-
-      PHList  : ToHList.Aux[P, L], // TupleN => HList
-      DInject : Inject[C, D]       // D => Coproduct
-    ): PIso[P, T] = {
-      def to(p: P): Option[T] = Some(TGeneric.from(DInject(DGeneric.from(PHList(p)))))
-      def from(t: T): Option[P] = DSelect(TGeneric.to(t)).map(d => LTupler(DGeneric.to(d)))
+    def derive[C <: Coproduct, L <: HList, O](implicit
+      T : Generic.Aux[T, C], // T <=> Coproduct
+      C0: Selector[C, D],    // Coproduct => D
+      D : Generic.Aux[D, L], // D <=> HList
+      L : View.Aux[L, O],    // HList => View
+      C1: Inject[C, D]       // D => Coproduct
+    ): PIso[O, T] = {
+      def to(o: O): Option[T] = Some(T.from(C1(D.from(L.unview(o)))))
+      def from(t: T): Option[O] = C0(T.to(t)).map(d => L.view(D.to(d)))
       PIso(to, from)
     }
   }
@@ -70,13 +70,12 @@ package generic {
      * The type parameters and implicit arguments should be inferred - if they are not
      * please make sure your call to `derive` is correct.
      */
-    def derive[L <: HList, P <: Product](implicit
-      AGeneric: Generic.Aux[A, L], // A <=> HList
-      LTupler : Tupler.Aux[L, P],  // HList => TupleN
-      PHList  : ToHList.Aux[P, L]  // TupleN => HList
-    ): PIso[P, A] = {
-      def to(p: P): Option[A] = Some(AGeneric.from(PHList(p)))
-      def from(a: A): Option[P] = Some(LTupler(AGeneric.to(a)))
+    def derive[L <: HList, O](implicit
+      A: Generic.Aux[A, L], // A <=> HList
+      L: View.Aux[L, O]    // HList => View
+    ): PIso[O, A] = {
+      def to(o: O): Option[A] = Some(A.from(L.unview(o)))
+      def from(a: A): Option[O] = Some(L.view(A.to(a)))
       PIso(to, from)
     }
   }
