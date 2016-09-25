@@ -1,4 +1,7 @@
 # circular
+
+[![Build Status](https://travis-ci.org/adelbertc/circular.svg?branch=master)](https://travis-ci.org/adelbertc/circular)
+
 **circular** is an [invertible syntax](http://camlunity.ru/swap/Library/Computer%20Science/Parsers/Invertible%20Syntax%20Descriptions.%20Unifying%20Parsing%20and%20Pretty-Printing.pdf) library for Scala.
 
 The **circular** project and contributors support the

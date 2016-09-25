@@ -44,8 +44,8 @@ lazy val circularSettings = buildSettings ++ commonSettings
 lazy val circular =
   project.in(file(".")).
   settings(circularSettings).
-  dependsOn(core, argonaut).
-  aggregate(core, argonaut)
+  dependsOn(core, argonaut, examples).
+  aggregate(core, argonaut, examples)
 
 lazy val core =
   project.in(file("core")).
@@ -63,4 +63,4 @@ lazy val argonaut =
 lazy val examples =
   project.in(file("examples")).
   settings(circularSettings).
-  dependsOn(circular)
+  dependsOn(core, argonaut)
