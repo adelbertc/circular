@@ -20,6 +20,7 @@ import cats.arrow.{Category, Split}
 import cats.Eq
 import cats.implicits._
 import scala.annotation.tailrec
+import shapeless.{Generic, HList}
 
 /**
  * A partial isomorphism.
@@ -34,6 +35,11 @@ final case class PIso[A, B](to: A => Option[B], from: B => Option[A]) {
 
   def lift[F[_]: PInvariant](fa: F[A]): F[B] =
     PInvariant[F].pimap(fa)(this)
+
+  def lift[F[_], L <: HList](fl: F[L])(implicit P: PInvariant[F], A: Generic.Aux[A, L]): F[B] = {
+    val genPIso = PIso[L, A](l => Some(A.from(l)), a => Some(A.to(a)))
+    compose(genPIso).lift(fl)
+  }
 
   def invert: PIso[B, A] = PIso(from, to)
 

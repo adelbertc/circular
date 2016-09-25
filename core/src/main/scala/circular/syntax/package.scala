@@ -17,6 +17,6 @@
 package circular
 
 package object syntax {
-  object all       extends AllSyntax
-  object cartesian extends CartesianSyntax
+  object all     extends AllSyntax
+  object builder extends BuilderSyntax
 }

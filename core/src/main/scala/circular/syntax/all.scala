@@ -16,6 +16,4 @@
 
 package circular.syntax
 
-trait AllSyntax
-  extends CartesianSyntax
-  with    cats.syntax.SemigroupKSyntax
+trait AllSyntax extends BuilderSyntax
