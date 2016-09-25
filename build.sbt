@@ -30,12 +30,12 @@ lazy val commonSettings = List(
   ),
   resolvers += Resolver.sonatypeRepo("snapshots"),
   libraryDependencies ++= List(
-    compilerPlugin("org.spire-math" %% "kind-projector" % "0.8.0"),
+    compilerPlugin("org.spire-math" %% "kind-projector" % "0.9.0" cross CrossVersion.binary),
     compilerPlugin("org.scalamacros" % "paradise"       % "2.1.0" cross CrossVersion.full),
-    "io.argonaut"                 %% "argonaut"      % "6.2-M3",
-    "org.typelevel"               %% "cats-core"     % "0.7.2-SNAPSHOT",
-    "com.chuusai"                 %% "shapeless"     % "2.3.2",
-    "org.specs2"                  %% "specs2-core"   % "3.8.4"           % "test"
+    "io.argonaut"   %% "argonaut"      % "6.2-M3",
+    "org.typelevel" %% "cats-core"     % "0.7.2",
+    "com.chuusai"   %% "shapeless"     % "2.3.2",
+    "org.specs2"    %% "specs2-core"   % "3.8.4"   % "test"
   )
 )
 
@@ -44,8 +44,8 @@ lazy val circularSettings = buildSettings ++ commonSettings
 lazy val circular =
   project.in(file(".")).
   settings(circularSettings).
-  dependsOn(core, argonaut, generic).
-  aggregate(core, argonaut, generic)
+  dependsOn(core, argonaut).
+  aggregate(core, argonaut)
 
 lazy val core =
   project.in(file("core")).
@@ -56,13 +56,6 @@ lazy val core =
 lazy val argonaut =
   project.in(file("argonaut")).
   settings(name := "circular-argonaut").
-  settings(description := "").
-  settings(circularSettings).
-  dependsOn(core)
-
-lazy val generic =
-  project.in(file("generic")).
-  settings(name := "circular-generic").
   settings(description := "").
   settings(circularSettings).
   dependsOn(core)

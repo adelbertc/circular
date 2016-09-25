@@ -38,10 +38,17 @@ object Adt {
   final case class Ctor2(a: Int, b: String)     extends Adt
 }
 
+final case class OneParam(one: Int)
+
+final case class TwoParams(one: Int, two: String)
+
+final case class ThreeParams(one: Int, two: String, three: Boolean)
+
 class Example extends Specification {
   def is = s2"""
-  Manual example  ${manualExample}
-  Derived example ${derivedExample}
+  Manual example       ${manualExample}
+  Derived example      ${derivedExample}
+  Many params example ${threeParams}
   """
 
   /**
@@ -89,5 +96,13 @@ class Example extends Specification {
     (syntax[JsonParser].run(goodJson).toOption must beSome(adt))      and
     (syntax[JsonParser].run(badJson).toOption  must beNone)           and
     (syntax[JsonPrinter].run(adt)              must beSome(goodJson))
+  }
+
+  def threeParams = {
+    import JsonSyntaxConstrained._
+    product[OneParam].derive.lift("one" ::= int)
+    product[TwoParams].derive.lift(("one" ::= int) <*> ("two" ::= string))
+    product[ThreeParams].derive.lift(("one" ::= int) <*> ("two" ::= string) <*> ("three" ::= boolean))
+    ok
   }
 }
