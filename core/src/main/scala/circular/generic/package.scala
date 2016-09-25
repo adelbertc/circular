@@ -18,8 +18,6 @@ package circular
 
 import shapeless.{Coproduct, Generic, HList}
 import shapeless.ops.coproduct.{Inject, Selector}
-import shapeless.ops.hlist.Tupler
-import shapeless.ops.product.ToHList
 
 import circular.generic.util.View
 

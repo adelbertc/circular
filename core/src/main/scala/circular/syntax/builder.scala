@@ -18,7 +18,7 @@ package circular
 package syntax
 
 import cats.{Cartesian, SemigroupK}
-import shapeless.{::, Generic, HList, HNil}
+import shapeless.{::, HList, HNil}
 import shapeless.ops.hlist.{Init, Last, Prepend}
 
 trait BuilderSyntax {

@@ -12,6 +12,8 @@ lazy val buildSettings = List(
   version := "0.1.0-SNAPSHOT"
 )
 
+val disabledReplOptions = Set("-Ywarn-unused-import")
+
 lazy val commonSettings = List(
   scalacOptions ++= List(
     "-deprecation",
@@ -27,7 +29,9 @@ lazy val commonSettings = List(
     "-Ywarn-dead-code",
     "-Ywarn-numeric-widen",
     "-Ywarn-value-discard"
-  ),
+  ) ++ scalaVersionFlags(scalaVersion.value),
+  scalacOptions in (Compile, console) ~= { _.filterNot(disabledReplOptions.contains(_)) },
+  scalacOptions in (Test, console) <<= (scalacOptions in (Compile, console)),
   resolvers += Resolver.sonatypeRepo("snapshots"),
   libraryDependencies ++= List(
     compilerPlugin("org.spire-math" %% "kind-projector" % "0.9.0" cross CrossVersion.binary),
@@ -36,7 +40,7 @@ lazy val commonSettings = List(
     "org.typelevel" %% "cats-core"     % "0.7.2",
     "com.chuusai"   %% "shapeless"     % "2.3.2",
     "org.specs2"    %% "specs2-core"   % "3.8.4"   % "test"
-  )
+  ) ++ scalaVersionDeps(scalaVersion.value)
 )
 
 lazy val circularSettings = buildSettings ++ commonSettings
@@ -64,3 +68,11 @@ lazy val examples =
   project.in(file("examples")).
   settings(circularSettings).
   dependsOn(core, argonaut)
+
+def scalaVersionDeps(version: String): List[ModuleID] =
+  if (version.startsWith("2.11")) List.empty
+  else List.empty
+
+def scalaVersionFlags(version: String): List[String] =
+  if (version.startsWith("2.11")) List("-Ywarn-unused-import")
+  else List.empty

@@ -16,7 +16,7 @@
 
 package circular.generic.util
 
-import shapeless.{::, DepFn1, HList, HNil}
+import shapeless.{::, HList, HNil}
 import shapeless.ops.hlist.Tupler
 import shapeless.ops.product.ToHList
 
