@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package circular.examples
+package circular.tests
 
 import argonaut.Json
 import argonaut.Argonaut._
@@ -44,8 +44,8 @@ final case class TwoParams(one: Int, two: String)
 
 final case class ThreeParams(one: Int, two: String, three: Boolean)
 
-class Example extends Specification {
-  def is = s2"""
+class Example extends Specification { def is =
+  s2"""
   Manual example       ${manualExample}
   Derived example      ${derivedExample}
   Many params example ${threeParams}

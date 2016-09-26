@@ -15,14 +15,26 @@
  */
 
 package circular
+package laws
+package discipline
 
-import cats.{Cartesian, Eq, MonoidK}
+import cats.Eq
+import cats.implicits._
+import cats.laws.discipline.catsLawsIsEqToProp
+import org.scalacheck.Arbitrary
+import org.scalacheck.Prop.forAll
+import org.typelevel.discipline.Laws
 
-/** Type class for defining syntax with partial isomorphisms. */
-trait Syntax[F[_]] extends Cartesian[F] with MonoidK[F] with PInvariant[F] {
-  def pure[A: Eq](a: A): F[A]
-}
-
-object Syntax {
-  def apply[F[_]](implicit F: Syntax[F]): Syntax[F] = F
+object PIsoTests extends Laws {
+  def pIso[A, B](p: PIso[A, B])(implicit
+    AA: Arbitrary[A],
+    EA: Eq[A],
+    AB: Arbitrary[B],
+    EB: Eq[B]
+  ): RuleSet = new DefaultRuleSet(
+    name   = "pIso",
+    parent = None,
+    "to . from . to = to"     -> forAll(PIsoLaws.to(p, _: A)),
+    "from . to . from = from" -> forAll(PIsoLaws.from(p, _: B))
+  )
 }

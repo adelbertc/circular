@@ -15,14 +15,15 @@
  */
 
 package circular
+package laws
+package discipline
 
-import cats.{Cartesian, Eq, MonoidK}
+import cats.Eq
+import cats.implicits._
+import cats.laws.discipline.eq._
+import org.scalacheck.Arbitrary
 
-/** Type class for defining syntax with partial isomorphisms. */
-trait Syntax[F[_]] extends Cartesian[F] with MonoidK[F] with PInvariant[F] {
-  def pure[A: Eq](a: A): F[A]
-}
-
-object Syntax {
-  def apply[F[_]](implicit F: Syntax[F]): Syntax[F] = F
+object eq {
+  implicit def circularLawsEqForPIso[A: Arbitrary: Eq, B: Arbitrary: Eq]: Eq[PIso[A, B]] =
+    Eq[(A => Option[B], B => Option[A])].on[PIso[A, B]](p => (p.to, p.from))
 }

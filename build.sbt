@@ -14,6 +14,9 @@ lazy val buildSettings = List(
 
 val disabledReplOptions = Set("-Ywarn-unused-import")
 
+val catsVersion = "0.7.2"
+val specs2Version = "3.6"
+
 lazy val commonSettings = List(
   scalacOptions ++= List(
     "-deprecation",
@@ -32,14 +35,14 @@ lazy val commonSettings = List(
   ) ++ scalaVersionFlags(scalaVersion.value),
   scalacOptions in (Compile, console) ~= { _.filterNot(disabledReplOptions.contains(_)) },
   scalacOptions in (Test, console) <<= (scalacOptions in (Compile, console)),
-  resolvers += Resolver.sonatypeRepo("snapshots"),
+  resolvers ++= List(
+    Resolver.bintrayRepo("scalaz", "releases"),
+    Resolver.sonatypeRepo("snapshots")
+  ),
   libraryDependencies ++= List(
     compilerPlugin("org.spire-math" %% "kind-projector" % "0.9.0" cross CrossVersion.binary),
-    compilerPlugin("org.scalamacros" % "paradise"       % "2.1.0" cross CrossVersion.full),
-    "io.argonaut"   %% "argonaut"      % "6.2-M3",
-    "org.typelevel" %% "cats-core"     % "0.7.2",
-    "com.chuusai"   %% "shapeless"     % "2.3.2",
-    "org.specs2"    %% "specs2-core"   % "3.8.4"   % "test"
+    "org.specs2"    %% "specs2-core"       % specs2Version % "test",
+    "org.specs2"    %% "specs2-scalacheck" % specs2Version % "test"
   ) ++ scalaVersionDeps(scalaVersion.value)
 )
 
@@ -48,30 +51,53 @@ lazy val circularSettings = buildSettings ++ commonSettings
 lazy val circular =
   project.in(file(".")).
   settings(circularSettings).
-  dependsOn(core, argonaut, examples).
-  aggregate(core, argonaut, examples)
+  dependsOn(core, argonaut, laws, tests).
+  aggregate(core, argonaut, laws, tests)
 
 lazy val core =
   project.in(file("core")).
   settings(name := "circular-core").
   settings(description := "").
-  settings(circularSettings)
+  settings(circularSettings).
+  settings(
+    libraryDependencies ++= List(
+      "org.typelevel" %% "cats-core" % catsVersion,
+      "com.chuusai"   %% "shapeless" % "2.3.2"
+    )
+  )
 
 lazy val argonaut =
   project.in(file("argonaut")).
   settings(name := "circular-argonaut").
   settings(description := "").
   settings(circularSettings).
+  settings(
+    libraryDependencies ++= List(
+      "io.argonaut" %% "argonaut" % "6.2-M3"
+    )
+  ).
   dependsOn(core)
 
-lazy val examples =
-  project.in(file("examples")).
+lazy val laws =
+  project.in(file("laws")).
+  settings(name := "circular-laws").
+  settings(description := "").
   settings(circularSettings).
-  dependsOn(core, argonaut)
+  settings(
+    libraryDependencies ++= List(
+      "org.typelevel" %% "cats-laws" % catsVersion
+    )
+  ).
+  dependsOn(core)
+
+lazy val tests =
+  project.in(file("tests")).
+  settings(circularSettings).
+  dependsOn(argonaut, core, laws)
 
 def scalaVersionDeps(version: String): List[ModuleID] =
   if (version.startsWith("2.11")) List.empty
-  else List.empty
+  else List(compilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full))
 
 def scalaVersionFlags(version: String): List[String] =
   if (version.startsWith("2.11")) List("-Ywarn-unused-import")

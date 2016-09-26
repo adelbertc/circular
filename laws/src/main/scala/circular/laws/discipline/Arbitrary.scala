@@ -15,14 +15,15 @@
  */
 
 package circular
+package laws
+package discipline
 
-import cats.{Cartesian, Eq, MonoidK}
+import org.scalacheck.{Arbitrary, Gen}
 
-/** Type class for defining syntax with partial isomorphisms. */
-trait Syntax[F[_]] extends Cartesian[F] with MonoidK[F] with PInvariant[F] {
-  def pure[A: Eq](a: A): F[A]
-}
-
-object Syntax {
-  def apply[F[_]](implicit F: Syntax[F]): Syntax[F] = F
+object arbitrary {
+  implicit def circularLawsArbitraryForPIso[A]: Arbitrary[PIso[A, A]] =
+    Arbitrary(Gen.oneOf(
+      Gen.const(PIso.id[A]),
+      Arbitrary.arbitrary[A => Boolean].map(PIso.subset[A])
+    ))
 }
