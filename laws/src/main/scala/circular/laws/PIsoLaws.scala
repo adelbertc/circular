@@ -15,14 +15,14 @@
  */
 
 package circular
+package laws
 
-import cats.{Cartesian, Eq, MonoidK}
+import cats.laws.{IsEq, IsEqArrow}
 
-/** Type class for defining syntax with partial isomorphisms. */
-trait Syntax[F[_]] extends Cartesian[F] with MonoidK[F] with PInvariant[F] {
-  def pure[A: Eq](a: A): F[A]
-}
+object PIsoLaws {
+  def to[A, B](p: PIso[A, B], a: A): IsEq[Option[B]] =
+    p.to(a).flatMap(p.from).flatMap(p.to) <-> p.to(a)
 
-object Syntax {
-  def apply[F[_]](implicit F: Syntax[F]): Syntax[F] = F
+  def from[A, B](p: PIso[A, B], b: B): IsEq[Option[A]] =
+    p.from(b).flatMap(p.to).flatMap(p.from) <-> p.from(b)
 }

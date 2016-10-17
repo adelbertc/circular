@@ -27,11 +27,13 @@ import shapeless.{Generic, HList}
  *
  * A partial ismorphism should obey the following laws:
  *
- *   to(a).flatMap(from) = Some(a)
- *   from(b).flatMap(to) = Some(b)
+ *   to(a).flatMap(from).flatMap(to)   = to(a)
+ *   from(b).flatMap(to).flatMap(from) = from(b)
+ *
+ * You can law check this via cats.laws.discipline.PIsoTests.
  */
 final case class PIso[A, B](to: A => Option[B], from: B => Option[A]) {
-  import PIso.{associate, cons, id, iterateDriver, nil, unit}
+  import PIso.iterateDriver
 
   def lift[F[_]: PInvariant](fa: F[A]): F[B] =
     PInvariant[F].pimap(fa)(this)
@@ -67,17 +69,6 @@ final case class PIso[A, B](to: A => Option[B], from: B => Option[A]) {
     PIso(a => Some(iterateDriver(paa.to, a)),
          a => Some(iterateDriver(paa.from, a)))
   }
-
-  /** Analogous to `List#foldLeft` but can be run forwards or backwards. */
-  def foldLeft(implicit ev: A <:< (A, B)): PIso[(A, List[B]), A] = {
-    val paba = this.asInstanceOf[PIso[(A, B), A]]
-    val step: PIso[(A, List[B]), (A, List[B])] =
-      id[A].split(cons[B].invert) andThen
-      associate[A, B, List[B]]    andThen
-      paba.split(id[List[B]])
-
-    step.iterate.andThen(id[A].split(nil[B].invert)).andThen(unit[A].invert)
-  }
 }
 
 object PIso extends PIsoInstances with PIsoFunctions {
@@ -107,6 +98,16 @@ trait PIsoFunctions {
   def fromPrism[A, B](to: A => Option[B], from: B => A): PIso[A, B] = PIso(to, b => Some(from(b)))
 
   def fromPrismR[A, B](from: A => B, to: B => Option[A]): PIso[A, B] = PIso(a => Some(from(a)), to)
+
+  /** Analogous to `List#foldLeft` but can be run forwards or backwards. */
+  def foldLeft[A, B](paba: PIso[(A, B), A]): PIso[(A, List[B]), A] = {
+    val step: PIso[(A, List[B]), (A, List[B])] =
+      id[A].split(cons[B].invert) andThen
+      associate[A, B, List[B]]    andThen
+      paba.split(id[List[B]])
+
+    step.iterate.andThen(id[A].split(nil[B].invert)).andThen(unit[A].invert)
+  }
 
   // PIsos for standard library - List, Vector, Option, Either
 

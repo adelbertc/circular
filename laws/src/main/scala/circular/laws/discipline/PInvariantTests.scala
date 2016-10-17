@@ -15,14 +15,23 @@
  */
 
 package circular
+package laws
+package discipline
 
-import cats.{Cartesian, Eq, MonoidK}
+import cats.Eq
+import cats.laws.discipline.catsLawsIsEqToProp
+import circular.laws.discipline.arbitrary._
+import org.scalacheck.Arbitrary
+import org.scalacheck.Prop.forAll
+import org.typelevel.discipline.Laws
 
-/** Type class for defining syntax with partial isomorphisms. */
-trait Syntax[F[_]] extends Cartesian[F] with MonoidK[F] with PInvariant[F] {
-  def pure[A: Eq](a: A): F[A]
-}
+trait PInvariantTests[F[_]] extends Laws {
+  def laws: PInvariantLaws[F]
 
-object Syntax {
-  def apply[F[_]](implicit F: Syntax[F]): Syntax[F] = F
+  def pInvariant[A](implicit AFA: Arbitrary[F[A]], EFA: Eq[F[A]]): RuleSet = new DefaultRuleSet(
+    name   = "pInvariant",
+    parent = None,
+    "pInvariant identity"    -> forAll(laws.pInvariantIdentity[A] _),
+    "pInvariant composition" -> forAll(laws.pInvariantComposition[A, A, A] _)
+  )
 }

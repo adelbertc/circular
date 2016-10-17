@@ -70,7 +70,7 @@ package generic {
      */
     def derive[L <: HList, O](implicit
       A: Generic.Aux[A, L], // A <=> HList
-      L: View.Aux[L, O]    // HList => View
+      L: View.Aux[L, O]     // HList => View
     ): PIso[O, A] = {
       def to(o: O): Option[A] = Some(A.from(L.unview(o)))
       def from(a: A): Option[O] = Some(L.view(A.to(a)))
