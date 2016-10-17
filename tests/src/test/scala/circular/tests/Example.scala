@@ -20,7 +20,6 @@ import argonaut.Json
 import argonaut.Argonaut._
 import circular._
 import circular.argonaut._
-import circular.argonaut.syntax.all._
 import circular.generic._
 import circular.syntax.all._
 import org.specs2.Specification
@@ -81,11 +80,11 @@ class Example extends Specification { def is =
    * Ctor2 = {"payload": {"int": 5, "string": "a string"}}
    */
   def derivedExample = {
-    import JsonSyntaxConstrained._
+    import JsonSyntax._
 
-    val syntax =
-      sum[Adt, Adt.Ctor1].derive.lift(("boolean" ::= boolean) <*> ("double" ::= double))         <+>
-      sum[Adt, Adt.Ctor2].derive.lift("payload" ::= (("int" ::= int) <*> ("string" ::= string)))
+    def syntax[F[_]: JsonSyntax]: F[Adt] =
+      sum[Adt, Adt.Ctor1].derive.lift(field("boolean", boolean) <*> field("double", double))             <+>
+      sum[Adt, Adt.Ctor2].derive.lift(field("payload", (field("int", int) <*> field("string", string))))
 
     val num = 5
     val str = "a string"
@@ -99,10 +98,12 @@ class Example extends Specification { def is =
   }
 
   def threeParams = {
-    import JsonSyntaxConstrained._
-    product[OneParam].derive.lift("one" ::= int)
-    product[TwoParams].derive.lift(("one" ::= int) <*> ("two" ::= string))
-    product[ThreeParams].derive.lift(("one" ::= int) <*> ("two" ::= string) <*> ("three" ::= boolean))
+    import JsonSyntax._
+    def syntax[F[_]: JsonSyntax] = {
+      product[OneParam].derive.lift(field("one", int))
+      product[TwoParams].derive.lift(field("one", int) <*> field("two", string))
+      product[ThreeParams].derive.lift(field("one", int) <*> field("two", string) <*> field("three", boolean))
+    }
     ok
   }
 }
